@@ -4,12 +4,17 @@ import (
 	"crypto/x509"
 	"encoding/asn1"
 	"ethcrl"
-	"ethcrl/crl"
+	"io/ioutil"
 	"log"
+	"os"
 )
 
 func main() {
-	_crl, err := crl.GetCRLBytes()
+	f, err := os.Open("./064b632533662a24381872437a3bb7cbb2cafc73.crl")
+	defer f.Close()
+
+	_crl, err := ioutil.ReadAll(f)
+	//_crl, err := crl.GetCRLBytes()
 	if err != nil {
 		log.Fatalf("error reading CRL: %s", err)
 	}
@@ -34,7 +39,7 @@ func main() {
 	for idx := 0; idx < len(_crl); idx++ {
 		if _crl[idx] != _crlBack[idx] {
 			log.Fatalf(
-				"byte %d in stored and retrieved certs differs: stored = %s, retrieved = %s", idx, _crl[idx], _crlBack[idx])
+				"byte %d in stored and retrieved certs differs: stored = %b, retrieved = %b", idx, _crl[idx], _crlBack[idx])
 		}
 	}
 }

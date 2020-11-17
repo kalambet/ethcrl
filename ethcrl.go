@@ -18,6 +18,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+const (
+	quantum = 128
+)
+
 func MustPush(list *pkix.CertificateList) common.Address {
 	addr, err := deployCRLv0(list)
 	if err != nil {
@@ -135,17 +139,27 @@ func deployTBSCertList(list pkix.TBSCertificateList, opts *bind.TransactOpts) (*
 		return nil, fmt.Errorf("error encoding Raw data filed: %s", err)
 	}
 
-	opts, err = eth.IterateOptions(opts)
-	if err != nil {
-		return nil, err
-	}
-	tx, err = tbsContract.SetRaw(opts, data)
-	if err != nil {
-		return nil, fmt.Errorf("error setting Raw data: %s", err)
-	}
-	err = eth.WaitTx(tx)
-	if err != nil {
-		return nil, err
+	total := len(data)
+	parts := total / quantum
+	var cursor, _len int
+	for i := 0; i <= parts; i++ {
+		_len = quantum
+		if i == parts {
+			_len = total - parts*quantum
+		}
+		opts, err = eth.IterateOptions(opts)
+		if err != nil {
+			return nil, err
+		}
+		tx, err = tbsContract.SetRaw(opts, data[cursor:cursor+_len])
+		if err != nil {
+			return nil, fmt.Errorf("error setting Raw data: %s", err)
+		}
+		err = eth.WaitTx(tx)
+		if err != nil {
+			return nil, err
+		}
+		cursor += _len
 	}
 
 	data, err = asn1.Marshal(list.Signature)
