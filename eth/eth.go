@@ -17,18 +17,16 @@ import (
 
 var (
 	Cli *ethclient.Client
+	Key string
 )
 
-const (
-	key = "7b90ee8f413863ae7d1dea2886f3bec462f56ebb22a9bf379a9a76f5de7ba335"
-)
-
-func init() {
+func InitEthClient(addr string, key string) {
 	var err error
-	Cli, err = ethclient.Dial("http://localhost:9545")
+	Cli, err = ethclient.Dial(addr)
 	if err != nil {
 		log.Fatalf("error initialising Eth client: %s", err)
 	}
+	Key = key
 }
 
 func IterateOptions(opts *bind.TransactOpts) (*bind.TransactOpts, error) {
@@ -56,7 +54,7 @@ func IterateOptions(opts *bind.TransactOpts) (*bind.TransactOpts, error) {
 }
 
 func Translator() (*bind.TransactOpts, error) {
-	privateKey, err := crypto.HexToECDSA(key)
+	privateKey, err := crypto.HexToECDSA(Key)
 	if err != nil {
 		return nil, err
 	}

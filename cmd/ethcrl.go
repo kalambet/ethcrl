@@ -4,19 +4,42 @@ import (
 	"crypto/x509"
 	"encoding/asn1"
 	"ethcrl"
+	"ethcrl/crl"
+	"ethcrl/eth"
+	"flag"
 	"io/ioutil"
 	"log"
 	"os"
 )
 
-func main() {
-	f, err := os.Open("./064b632533662a24381872437a3bb7cbb2cafc73.crl")
-	defer f.Close()
+var (
+	derFile = flag.String("der", "", "path to DER CRL file")
+	pKey    = flag.String("key", "7b90ee8f413863ae7d1dea2886f3bec462f56ebb22a9bf379a9a76f5de7ba335", "private key data")
+	backend = flag.String("backend", "http://localhost:9545", "address to eth node listening on port")
+)
 
-	_crl, err := ioutil.ReadAll(f)
-	//_crl, err := crl.GetCRLBytes()
-	if err != nil {
-		log.Fatalf("error reading CRL: %s", err)
+func main() {
+	flag.Parse()
+	flag.Usage()
+
+	eth.InitEthClient(*backend, *pKey)
+
+	_crl := make([]byte, 0)
+	if len(*derFile) != 0 {
+		f, err := os.Open(*derFile)
+		defer f.Close()
+		_crl, err = ioutil.ReadAll(f)
+		if err != nil {
+			log.Fatalf("error reading CRL DER file: %s", err)
+		}
+		log.Printf("Using data from provided DER file %s", *derFile)
+	} else {
+		var err error
+		_crl, err = crl.GetCRLBytes()
+		if err != nil {
+			log.Fatalf("error reading CRL DER data from embeded test data: %s", err)
+		}
+		log.Println("Using embeded example CRL")
 	}
 
 	list, err := x509.ParseDERCRL(_crl)
