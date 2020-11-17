@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"time"
 
 	"ethcrl/eth"
 	"ethcrl/sol/gocontracts/crlv0"
@@ -17,98 +18,100 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func MustPush(list *pkix.CertificateList) {
-	err := deployCRLv0(list)
+func MustPush(list *pkix.CertificateList) common.Address {
+	addr, err := deployCRLv0(list)
 	if err != nil {
 		log.Fatalf("error deploying CRLv0 cntract: %s", err)
 	}
+
+	return *addr
 }
 
-func deployCRLv0(list *pkix.CertificateList) error {
+func deployCRLv0(list *pkix.CertificateList) (*common.Address, error) {
 	opts, err := eth.Translator()
 	if err != nil {
-		return fmt.Errorf("error getting tx options: %s", err)
+		return nil, fmt.Errorf("error getting tx options: %s", err)
 	}
 
 	opts, err = eth.IterateOptions(opts)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	addr, tx, crlContract, err := crlv0.DeployCRLv0(opts, eth.Cli)
 	if err != nil {
-		return fmt.Errorf("error deploying the CRLv0 contract: %s", err)
+		return nil, fmt.Errorf("error deploying the CRLv0 contract: %s", err)
 	}
 
 	addr, err = bind.WaitDeployed(context.Background(), eth.Cli, tx)
 	if err != nil {
-		return fmt.Errorf("error wating for a CRLv0 contract to deploy: %s", err)
+		return nil, fmt.Errorf("error wating for a CRLv0 contract to deploy: %s", err)
 	}
 	log.Printf("CRLv0 deployed at %s", addr.String())
 
 	data, err := asn1.Marshal(list.SignatureAlgorithm)
 	if err != nil {
-		return fmt.Errorf("error encoding Signture Alorithm filed: %s", err)
+		return nil, fmt.Errorf("error encoding Signture Alorithm filed: %s", err)
 	}
 
 	opts, err = eth.IterateOptions(opts)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	tx, err = crlContract.SetSigAlgo(opts, data)
 	if err != nil {
-		return fmt.Errorf("error uploading Signture Alorithm data: %s", err)
+		return nil, fmt.Errorf("error uploading Signture Alorithm data: %s", err)
 	}
 	err = eth.WaitTx(tx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	data, err = asn1.Marshal(list.SignatureValue)
 	if err != nil {
-		return fmt.Errorf("error encoding Signture Value filed: %s", err)
+		return nil, fmt.Errorf("error encoding Signture Value filed: %s", err)
 	}
 
 	opts, err = eth.IterateOptions(opts)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	tx, err = crlContract.SetSigValue(opts, data)
 	if err != nil {
-		return fmt.Errorf("error uploading Signture Value data: %s", err)
+		return nil, fmt.Errorf("error uploading Signture Value data: %s", err)
 	}
 	err = eth.WaitTx(tx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tbsAddr, err := deployTBSCertList(list.TBSCertList, opts)
 	if err != nil {
-		return fmt.Errorf("error deploying TBSCertList contract: %s", err)
+		return nil, fmt.Errorf("error deploying TBSCertList contract: %s", err)
 	}
 
 	opts, err = eth.IterateOptions(opts)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	tx, err = crlContract.SetTBSCertList(opts, *tbsAddr)
 	if err != nil {
-		return fmt.Errorf("error setting TBSCertList contract address: %s", err)
+		return nil, fmt.Errorf("error setting TBSCertList contract address: %s", err)
 	}
 	err = eth.WaitTx(tx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	opts, err = eth.IterateOptions(opts)
 	tx, err = crlContract.Finalize(opts, true)
 	if err != nil {
-		return fmt.Errorf("error finalising CRLv0 contract: %s", err)
+		return nil, fmt.Errorf("error finalising CRLv0 contract: %s", err)
 	}
 	err = eth.WaitTx(tx)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &addr, nil
 }
 
 func deployTBSCertList(list pkix.TBSCertificateList, opts *bind.TransactOpts) (*common.Address, error) {
@@ -190,7 +193,7 @@ func deployTBSCertList(list pkix.TBSCertificateList, opts *bind.TransactOpts) (*
 	if err != nil {
 		return nil, err
 	}
-	tx, err = tbsContract.SetExtentions(opts, data)
+	tx, err = tbsContract.SetExtensions(opts, data)
 	if err != nil {
 		return nil, fmt.Errorf("error setting Extensions: %s", err)
 	}
@@ -274,7 +277,7 @@ func deployRevokeCertList(certs []pkix.RevokedCertificate, opts *bind.TransactOp
 		if err != nil {
 			return nil, err
 		}
-		tx, err = rcContract.SetExtentions(opts, data)
+		tx, err = rcContract.SetExtensions(opts, data)
 		if err != nil {
 			return nil, fmt.Errorf("error setting Extensions: %s", err)
 		}
@@ -313,6 +316,231 @@ func deployRevokeCertList(certs []pkix.RevokedCertificate, opts *bind.TransactOp
 	return res, nil
 }
 
-func MustGet() []byte {
-	return nil
+func MustGet(addr common.Address) *pkix.CertificateList {
+	list, err := buildCertificateList(addr)
+	if err != nil {
+		log.Fatalf("error building certificate back: %s", err)
+	}
+	return list
+}
+
+func buildCertificateList(addr common.Address) (*pkix.CertificateList, error) {
+	log.Printf("restoring CertificateList from contract: %s", addr.String())
+	trans, err := eth.Translator()
+	if err != nil {
+		return nil, err
+	}
+	opts := &bind.CallOpts{From: trans.From}
+
+	crlContract, err := crlv0.NewCRLv0Caller(addr, eth.Cli)
+	if err != nil {
+		return nil, fmt.Errorf("error instantiating CRLv0 contract: %s", err)
+	}
+	res := new(pkix.CertificateList)
+
+	var iter int64 = 0
+	data := make([]byte, 0)
+	for {
+		piece, err := crlContract.SigAlgo(opts, big.NewInt(iter))
+		if err != nil {
+			break
+		}
+		data = append(data, piece)
+		iter++
+	}
+
+	ai := new(pkix.AlgorithmIdentifier)
+	_, err = asn1.Unmarshal(data, ai)
+	if err != nil {
+		return nil, err
+	}
+	res.SignatureAlgorithm = *ai
+
+	iter = 0
+	data = make([]byte, 0)
+	for {
+		piece, err := crlContract.SigValue(opts, big.NewInt(iter))
+		if err != nil {
+			break
+		}
+		data = append(data, piece)
+		iter++
+	}
+
+	value := new(asn1.BitString)
+	_, err = asn1.Unmarshal(data, value)
+	if err != nil {
+		return nil, err
+	}
+	res.SignatureValue = *value
+
+	tbsAddr, err := crlContract.TbsCertList(opts)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving TBSCertList contract address: %s", err)
+	}
+
+	tbs, err := buildTBSCertList(tbsAddr, opts)
+	if err != nil {
+		return nil, fmt.Errorf("error building TBSCertList contract address: %s", err)
+	}
+	res.TBSCertList = *tbs
+	return res, nil
+
+}
+
+func buildTBSCertList(addr common.Address, opts *bind.CallOpts) (*pkix.TBSCertificateList, error) {
+	log.Printf("restoring TBSCertificateList from contract: %s", addr.String())
+	tbsContract, err := tbscl.NewTBSCertListCaller(addr, eth.Cli)
+	if err != nil {
+		return nil, fmt.Errorf("error instantiating TBSCertList contract: %s", err)
+	}
+	res := new(pkix.TBSCertificateList)
+
+	var iter int64 = 0
+	data := make([]byte, 0)
+	for {
+		piece, err := tbsContract.Raw(opts, big.NewInt(iter))
+		if err != nil {
+			break
+		}
+		data = append(data, piece)
+		iter++
+	}
+
+	rawValue := new(asn1.RawContent)
+	_, err = asn1.Unmarshal(data, rawValue)
+	if err != nil {
+		return nil, err
+	}
+	res.Raw = *rawValue
+
+	iter = 0
+	data = make([]byte, 0)
+	for {
+		piece, err := tbsContract.Issuer(opts, big.NewInt(iter))
+		if err != nil {
+			break
+		}
+		data = append(data, piece)
+		iter++
+	}
+
+	rdnsValue := new(pkix.RDNSequence)
+	_, err = asn1.Unmarshal(data, rdnsValue)
+	if err != nil {
+		return nil, err
+	}
+	res.Issuer = *rdnsValue
+
+	iter = 0
+	data = make([]byte, 0)
+	for {
+		piece, err := tbsContract.Signature(opts, big.NewInt(iter))
+		if err != nil {
+			break
+		}
+		data = append(data, piece)
+		iter++
+	}
+
+	algoIdentValue := new(pkix.AlgorithmIdentifier)
+	_, err = asn1.Unmarshal(data, algoIdentValue)
+	if err != nil {
+		return nil, err
+	}
+	res.Signature = *algoIdentValue
+
+	iter = 0
+	data = make([]byte, 0)
+	for {
+		piece, err := tbsContract.Extensions(opts, big.NewInt(iter))
+		if err != nil {
+			break
+		}
+		data = append(data, piece)
+		iter++
+	}
+
+	extValue := new([]pkix.Extension)
+	_, err = asn1.Unmarshal(data, extValue)
+	if err != nil {
+		return nil, err
+	}
+	res.Extensions = *extValue
+
+	nextUpdEpoch, err := tbsContract.NextUpdate(opts)
+	if err != nil {
+		return nil, err
+	}
+	res.NextUpdate = time.Unix(nextUpdEpoch.Int64(), 0)
+
+	thisUpdEpoch, err := tbsContract.ThisUpdate(opts)
+	if err != nil {
+		return nil, err
+	}
+	res.ThisUpdate = time.Unix(thisUpdEpoch.Int64(), 0)
+
+	version, err := tbsContract.Version(opts)
+	if err != nil {
+		return nil, err
+	}
+	res.Version = int(version)
+
+	res.RevokedCertificates = make([]pkix.RevokedCertificate, 0)
+	iter = 0
+	for {
+		addr, err := tbsContract.RevokedCertList(opts, big.NewInt(iter))
+		if err != nil {
+			break
+		}
+
+		rcert, err := buildRevokedCert(addr, opts)
+		if err != nil {
+			return nil, fmt.Errorf("error building Revoked Certificate: %s", err)
+		}
+		res.RevokedCertificates = append(res.RevokedCertificates, *rcert)
+		iter++
+	}
+
+	return res, nil
+}
+
+func buildRevokedCert(addr common.Address, opts *bind.CallOpts) (*pkix.RevokedCertificate, error) {
+	log.Printf("restoring RevokedCertificate from contract: %s", addr.String())
+	rcContract, err := rc.NewRevokedCertCaller(addr, eth.Cli)
+	if err != nil {
+		return nil, fmt.Errorf("error instantiating RevokedCert contract: %s", err)
+	}
+	res := new(pkix.RevokedCertificate)
+
+	var iter int64 = 0
+	data := make([]byte, 0)
+	for {
+		piece, err := rcContract.Extensions(opts, big.NewInt(iter))
+		if err != nil {
+			break
+		}
+		data = append(data, piece)
+		iter++
+	}
+
+	extValue := new([]pkix.Extension)
+	_, err = asn1.Unmarshal(data, extValue)
+	if err != nil {
+		return nil, err
+	}
+	res.Extensions = *extValue
+
+	serial, err := rcContract.SerialNumber(opts)
+	if err != nil {
+		return nil, err
+	}
+	res.SerialNumber = serial
+
+	timeEpoch, err := rcContract.RevocationTime(opts)
+	if err != nil {
+		return nil, err
+	}
+	res.RevocationTime = time.Unix(timeEpoch.Int64(), 0)
+	return res, nil
 }

@@ -68,7 +68,7 @@ func Translator() (*bind.TransactOpts, error) {
 	}
 
 	from := crypto.PubkeyToAddress(*publicKeyECDSA)
-	log.Printf("from: %s\n", from.String())
+	log.Printf("account: %s\n", from.String())
 
 	return bind.NewKeyedTransactor(privateKey), nil
 }
