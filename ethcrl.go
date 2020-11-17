@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/x509/pkix"
 	"encoding/asn1"
-	"ethcrl/sol/gocontracts/rc"
 	"fmt"
 	"log"
 	"math/big"
@@ -12,6 +11,7 @@ import (
 
 	"ethcrl/eth"
 	"ethcrl/sol/gocontracts/crlv0"
+	"ethcrl/sol/gocontracts/rc"
 	"ethcrl/sol/gocontracts/tbscl"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	quantum = 128
+	quantum = 1024
 )
 
 func MustPush(list *pkix.CertificateList) common.Address {
