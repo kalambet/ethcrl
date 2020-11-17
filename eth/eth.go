@@ -4,25 +4,23 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
-	"ethcrl/sol"
+	"fmt"
 	"log"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 var (
-	Cli   bind.ContractBackend
-	CRLv0 *sol.Sol
+	Cli *ethclient.Client
 )
 
 const (
-	addr = "0x05FD872F322ef6e3D70A561Ad2234365fC692eAb"
-	key  = "7b90ee8f413863ae7d1dea2886f3bec462f56ebb22a9bf379a9a76f5de7ba335"
+	key = "7b90ee8f413863ae7d1dea2886f3bec462f56ebb22a9bf379a9a76f5de7ba335"
 )
 
 func init() {
@@ -31,16 +29,13 @@ func init() {
 	if err != nil {
 		log.Fatalf("error initialising Eth client: %s", err)
 	}
-
-	address := common.HexToAddress(addr)
-	CRLv0, err = sol.NewSol(address, Cli)
-	if err != nil {
-		log.Fatalf("error binding to contract: %s", err)
-	}
 }
 
-func Options(opts *bind.TransactOpts, from common.Address) (*bind.TransactOpts, error) {
-	nonce, err := Cli.PendingNonceAt(context.Background(), from)
+func IterateOptions(opts *bind.TransactOpts) (*bind.TransactOpts, error) {
+	if opts == nil {
+		return nil, errors.New("initial options needs to be provided")
+	}
+	nonce, err := Cli.PendingNonceAt(context.Background(), opts.From)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +47,6 @@ func Options(opts *bind.TransactOpts, from common.Address) (*bind.TransactOpts, 
 	}
 	log.Printf("gas price: %d\n", gasPrice)
 
-	opts.From = from
 	opts.Value = big.NewInt(0)
 	opts.Nonce = big.NewInt(int64(nonce))
 	opts.GasPrice = gasPrice
@@ -61,20 +55,31 @@ func Options(opts *bind.TransactOpts, from common.Address) (*bind.TransactOpts, 
 	return opts, nil
 }
 
-func Translator() (*bind.TransactOpts, common.Address, error) {
+func Translator() (*bind.TransactOpts, error) {
 	privateKey, err := crypto.HexToECDSA(key)
 	if err != nil {
-		return nil, [20]byte{}, err
+		return nil, err
 	}
 
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
-		return nil, [20]byte{}, errors.New("error casting public key to ECDSA")
+		return nil, errors.New("error casting public key to ECDSA")
 	}
 
 	from := crypto.PubkeyToAddress(*publicKeyECDSA)
-	log.Printf("from: %s\n", from)
+	log.Printf("from: %s\n", from.String())
 
-	return bind.NewKeyedTransactor(privateKey), from, nil
+	return bind.NewKeyedTransactor(privateKey), nil
+}
+
+func WaitTx(tx *types.Transaction) error {
+	r, err := bind.WaitMined(context.Background(), Cli, tx)
+	if err != nil {
+		return err
+	}
+	if r.Status != types.ReceiptStatusSuccessful {
+		return fmt.Errorf("trnsaction failes %#v", r.Logs)
+	}
+	return nil
 }
