@@ -1,22 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.8.0;
 
-contract CRLv0 {
-  string public version;
+import "./Finalizable.sol";
+
+contract CRLv0 is Finalizable {
   bool public finalised;
-  uint8[] public data;
 
-  constructor() public {}
+  address public tbsCertList;
+  uint8[] public sigAlgo;
+  uint8[] public sigValue;
 
-  function append(uint8[] memory part, bool isFinal) public {
-    assert(finalised == false);
-    uint inLength = part.length;
+  function setSigAlgo(uint8[] memory data) public onlyNotFinalized {
+    uint inLength = data.length;
 
     for (uint index = 0; index < inLength; index++) {
-      data.push(part[index]); 
+      sigAlgo.push(data[index]); 
     }
-    finalised = isFinal;
   }
 
-  function length() public view returns (uint256) {return data.length;}
+  function setSigValue(uint8[] memory data) public onlyNotFinalized {
+    uint inLength = data.length;
+
+    for (uint index = 0; index < inLength; index++) {
+      sigValue.push(data[index]); 
+    }
+  }
+
+  function setTBSCertList(address ref) public onlyNotFinalized {
+    assert(tbsCertList == address(0));
+    tbsCertList = ref;
+  }
 }
