@@ -279,19 +279,22 @@ func (_Finalizable *FinalizableTransactorSession) Finalize(fin bool) (*types.Tra
 }
 
 // RevokedCertABI is the input ABI used to generate the binding from.
-const RevokedCertABI = "[{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"fin\",\"type\":\"bool\"}],\"name\":\"finalize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"finalized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isFinalized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"serial\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"setCertData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8[]\",\"name\":\"data\",\"type\":\"uint8[]\"}],\"name\":\"setExtentions\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const RevokedCertABI = "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"extensions\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"fin\",\"type\":\"bool\"}],\"name\":\"finalize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"finalized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isFinalized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"revocationTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"serialNumber\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"serial\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\"}],\"name\":\"setCertData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8[]\",\"name\":\"data\",\"type\":\"uint8[]\"}],\"name\":\"setExtensions\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // RevokedCertFuncSigs maps the 4-byte function signature to its string representation.
 var RevokedCertFuncSigs = map[string]string{
+	"db85d59c": "extensions(uint256)",
 	"6c9789b0": "finalize(bool)",
 	"b3f05b97": "finalized()",
 	"8d4e4083": "isFinalized()",
+	"af8ee94a": "revocationTime()",
+	"2a0daeea": "serialNumber()",
 	"211bd912": "setCertData(uint256,uint256)",
-	"f6cd261c": "setExtentions(uint8[])",
+	"2fc02f22": "setExtensions(uint8[])",
 }
 
 // RevokedCertBin is the compiled bytecode used for deploying new contracts.
-var RevokedCertBin = "0x608060405234801561001057600080fd5b50610325806100206000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c8063211bd9121461005c5780636c9789b0146100815780638d4e4083146100a0578063b3f05b97146100bc578063f6cd261c146100c4575b600080fd5b61007f6004803603604081101561007257600080fd5b5080359060200135610167565b005b61007f6004803603602081101561009757600080fd5b503515156101b4565b6100a8610209565b604080519115158252519081900360200190f35b6100a8610212565b61007f600480360360208110156100da57600080fd5b8101906020810181356401000000008111156100f557600080fd5b82018360208201111561010757600080fd5b8035906020019184602083028401116401000000008311171561012957600080fd5b91908080602002602001604051908101604052809392919081815260200183836020028082843760009201919091525092955061021b945050505050565b60005460ff16156101a95760405162461bcd60e51b815260040180806020018281038252602a8152602001806102c6602a913960400191505060405180910390fd5b600191909155600255565b60005460ff16156101f65760405162461bcd60e51b815260040180806020018281038252602a8152602001806102c6602a913960400191505060405180910390fd5b6000805460ff1916911515919091179055565b60005460ff1690565b60005460ff1681565b60005460ff161561025d5760405162461bcd60e51b815260040180806020018281038252602a8152602001806102c6602a913960400191505060405180910390fd5b805160005b818110156102c057600383828151811061027857fe5b602090810291909101810151825460018181018555600094855293839020928104909201805460ff928316601f9094166101000a938402929093021990921617905501610262565b50505056fe46696e616c697a61626c653a20636f6e747261637420697320616c72656164792066696e616c697a6564a2646970667358221220a70a7fa612fbe3691f8efc5f4d89e64e6bb2e2acf0d082219e64673b8d3204a464736f6c63430007040033"
+var RevokedCertBin = "0x608060405234801561001057600080fd5b506103eb806100206000396000f3fe608060405234801561001057600080fd5b50600436106100885760003560e01c80638d4e40831161005b5780638d4e40831461018e578063af8ee94a146101aa578063b3f05b97146101b2578063db85d59c146101ba57610088565b8063211bd9121461008d5780632a0daeea146100b25780632fc02f22146100cc5780636c9789b01461016f575b600080fd5b6100b0600480360360408110156100a357600080fd5b50803590602001356101ed565b005b6100ba61023a565b60408051918252519081900360200190f35b6100b0600480360360208110156100e257600080fd5b8101906020810181356401000000008111156100fd57600080fd5b82018360208201111561010f57600080fd5b8035906020019184602083028401116401000000008311171561013157600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600092019190915250929550610240945050505050565b6100b06004803603602081101561018557600080fd5b503515156102ea565b61019661033f565b604080519115158252519081900360200190f35b6100ba610348565b61019661034e565b6101d7600480360360208110156101d057600080fd5b5035610357565b6040805160ff9092168252519081900360200190f35b60005460ff161561022f5760405162461bcd60e51b815260040180806020018281038252602a81526020018061038c602a913960400191505060405180910390fd5b600191909155600255565b60015481565b60005460ff16156102825760405162461bcd60e51b815260040180806020018281038252602a81526020018061038c602a913960400191505060405180910390fd5b805160005b818110156102e557600383828151811061029d57fe5b602090810291909101810151825460018181018555600094855293839020928104909201805460ff928316601f9094166101000a938402929093021990921617905501610287565b505050565b60005460ff161561032c5760405162461bcd60e51b815260040180806020018281038252602a81526020018061038c602a913960400191505060405180910390fd5b6000805460ff1916911515919091179055565b60005460ff1690565b60025481565b60005460ff1681565b6003818154811061036757600080fd5b9060005260206000209060209182820401919006915054906101000a900460ff168156fe46696e616c697a61626c653a20636f6e747261637420697320616c72656164792066696e616c697a6564a2646970667358221220c131cbc19a993f161f1e27507027522ae8ca4b87f2d8b223f1ecdfe9bc3f502664736f6c63430007040033"
 
 // DeployRevokedCert deploys a new Ethereum contract, binding an instance of RevokedCert to it.
 func DeployRevokedCert(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *RevokedCert, error) {
@@ -449,6 +452,37 @@ func (_RevokedCert *RevokedCertTransactorRaw) Transact(opts *bind.TransactOpts, 
 	return _RevokedCert.Contract.contract.Transact(opts, method, params...)
 }
 
+// Extensions is a free data retrieval call binding the contract method 0xdb85d59c.
+//
+// Solidity: function extensions(uint256 ) view returns(uint8)
+func (_RevokedCert *RevokedCertCaller) Extensions(opts *bind.CallOpts, arg0 *big.Int) (uint8, error) {
+	var out []interface{}
+	err := _RevokedCert.contract.Call(opts, &out, "extensions", arg0)
+
+	if err != nil {
+		return *new(uint8), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
+
+	return out0, err
+
+}
+
+// Extensions is a free data retrieval call binding the contract method 0xdb85d59c.
+//
+// Solidity: function extensions(uint256 ) view returns(uint8)
+func (_RevokedCert *RevokedCertSession) Extensions(arg0 *big.Int) (uint8, error) {
+	return _RevokedCert.Contract.Extensions(&_RevokedCert.CallOpts, arg0)
+}
+
+// Extensions is a free data retrieval call binding the contract method 0xdb85d59c.
+//
+// Solidity: function extensions(uint256 ) view returns(uint8)
+func (_RevokedCert *RevokedCertCallerSession) Extensions(arg0 *big.Int) (uint8, error) {
+	return _RevokedCert.Contract.Extensions(&_RevokedCert.CallOpts, arg0)
+}
+
 // Finalized is a free data retrieval call binding the contract method 0xb3f05b97.
 //
 // Solidity: function finalized() view returns(bool)
@@ -511,6 +545,68 @@ func (_RevokedCert *RevokedCertCallerSession) IsFinalized() (bool, error) {
 	return _RevokedCert.Contract.IsFinalized(&_RevokedCert.CallOpts)
 }
 
+// RevocationTime is a free data retrieval call binding the contract method 0xaf8ee94a.
+//
+// Solidity: function revocationTime() view returns(uint256)
+func (_RevokedCert *RevokedCertCaller) RevocationTime(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _RevokedCert.contract.Call(opts, &out, "revocationTime")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// RevocationTime is a free data retrieval call binding the contract method 0xaf8ee94a.
+//
+// Solidity: function revocationTime() view returns(uint256)
+func (_RevokedCert *RevokedCertSession) RevocationTime() (*big.Int, error) {
+	return _RevokedCert.Contract.RevocationTime(&_RevokedCert.CallOpts)
+}
+
+// RevocationTime is a free data retrieval call binding the contract method 0xaf8ee94a.
+//
+// Solidity: function revocationTime() view returns(uint256)
+func (_RevokedCert *RevokedCertCallerSession) RevocationTime() (*big.Int, error) {
+	return _RevokedCert.Contract.RevocationTime(&_RevokedCert.CallOpts)
+}
+
+// SerialNumber is a free data retrieval call binding the contract method 0x2a0daeea.
+//
+// Solidity: function serialNumber() view returns(uint256)
+func (_RevokedCert *RevokedCertCaller) SerialNumber(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _RevokedCert.contract.Call(opts, &out, "serialNumber")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// SerialNumber is a free data retrieval call binding the contract method 0x2a0daeea.
+//
+// Solidity: function serialNumber() view returns(uint256)
+func (_RevokedCert *RevokedCertSession) SerialNumber() (*big.Int, error) {
+	return _RevokedCert.Contract.SerialNumber(&_RevokedCert.CallOpts)
+}
+
+// SerialNumber is a free data retrieval call binding the contract method 0x2a0daeea.
+//
+// Solidity: function serialNumber() view returns(uint256)
+func (_RevokedCert *RevokedCertCallerSession) SerialNumber() (*big.Int, error) {
+	return _RevokedCert.Contract.SerialNumber(&_RevokedCert.CallOpts)
+}
+
 // Finalize is a paid mutator transaction binding the contract method 0x6c9789b0.
 //
 // Solidity: function finalize(bool fin) returns()
@@ -553,23 +649,23 @@ func (_RevokedCert *RevokedCertTransactorSession) SetCertData(serial *big.Int, t
 	return _RevokedCert.Contract.SetCertData(&_RevokedCert.TransactOpts, serial, time)
 }
 
-// SetExtentions is a paid mutator transaction binding the contract method 0xf6cd261c.
+// SetExtensions is a paid mutator transaction binding the contract method 0x2fc02f22.
 //
-// Solidity: function setExtentions(uint8[] data) returns()
-func (_RevokedCert *RevokedCertTransactor) SetExtentions(opts *bind.TransactOpts, data []uint8) (*types.Transaction, error) {
-	return _RevokedCert.contract.Transact(opts, "setExtentions", data)
+// Solidity: function setExtensions(uint8[] data) returns()
+func (_RevokedCert *RevokedCertTransactor) SetExtensions(opts *bind.TransactOpts, data []uint8) (*types.Transaction, error) {
+	return _RevokedCert.contract.Transact(opts, "setExtensions", data)
 }
 
-// SetExtentions is a paid mutator transaction binding the contract method 0xf6cd261c.
+// SetExtensions is a paid mutator transaction binding the contract method 0x2fc02f22.
 //
-// Solidity: function setExtentions(uint8[] data) returns()
-func (_RevokedCert *RevokedCertSession) SetExtentions(data []uint8) (*types.Transaction, error) {
-	return _RevokedCert.Contract.SetExtentions(&_RevokedCert.TransactOpts, data)
+// Solidity: function setExtensions(uint8[] data) returns()
+func (_RevokedCert *RevokedCertSession) SetExtensions(data []uint8) (*types.Transaction, error) {
+	return _RevokedCert.Contract.SetExtensions(&_RevokedCert.TransactOpts, data)
 }
 
-// SetExtentions is a paid mutator transaction binding the contract method 0xf6cd261c.
+// SetExtensions is a paid mutator transaction binding the contract method 0x2fc02f22.
 //
-// Solidity: function setExtentions(uint8[] data) returns()
-func (_RevokedCert *RevokedCertTransactorSession) SetExtentions(data []uint8) (*types.Transaction, error) {
-	return _RevokedCert.Contract.SetExtentions(&_RevokedCert.TransactOpts, data)
+// Solidity: function setExtensions(uint8[] data) returns()
+func (_RevokedCert *RevokedCertTransactorSession) SetExtensions(data []uint8) (*types.Transaction, error) {
+	return _RevokedCert.Contract.SetExtensions(&_RevokedCert.TransactOpts, data)
 }

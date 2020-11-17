@@ -4,15 +4,15 @@ pragma solidity >=0.4.22 <0.8.0;
 import "./Finalizable.sol";
 
 contract RevokedCert is Finalizable {
-  uint256 serialNumber;
-  uint256 revocationTime;
-  uint8[] extentions;
+  uint256 public serialNumber;
+  uint256 public revocationTime;
+  uint8[] public extensions;
 
-  function setExtentions(uint8[] memory data) public onlyNotFinalized {
+  function setExtensions(uint8[] memory data) public onlyNotFinalized {
     uint inLength = data.length;
 
     for (uint index = 0; index < inLength; index++) {
-      extentions.push(data[index]); 
+      extensions.push(data[index]);
     }
   }
 

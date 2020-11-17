@@ -5,13 +5,13 @@ import "./Finalizable.sol";
 
 contract TBSCertList is Finalizable {
   uint8[] public raw;
-	int32 public verison;
-	uint8[] public signature;
-	uint8[] public issuer;
-	uint256 public thisUpdate;
-	uint256 public nextUpdate;
-	uint8[] public extentions;
-  address[] revokedCertList;
+  int32 public version;
+  uint8[] public signature;
+  uint8[] public issuer;
+  uint256 public thisUpdate;
+  uint256 public nextUpdate;
+  uint8[] public extensions;
+  address[] public revokedCertList;
 
   function addRevokedCert(address ref) public onlyNotFinalized {   
     Finalizable cert = Finalizable(ref);
@@ -43,17 +43,17 @@ contract TBSCertList is Finalizable {
     }
   }
 
-  function setExtentions(uint8[] memory data) public onlyNotFinalized {
+  function setExtensions(uint8[] memory data) public onlyNotFinalized {
     uint inLength = data.length;
 
     for (uint index = 0; index < inLength; index++) {
-      extentions.push(data[index]); 
+      extensions.push(data[index]);
     }
   }
 
-  function setTimeAndVersion(uint256 thisUpd, uint256 nextUpd, int32 version) public onlyNotFinalized {
+  function setTimeAndVersion(uint256 thisUpd, uint256 nextUpd, int32 ver) public onlyNotFinalized {
     thisUpdate = thisUpd;
     nextUpdate = nextUpd;
-    version = version;
+    version = ver;
   }
 }
