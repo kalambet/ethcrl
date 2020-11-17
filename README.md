@@ -7,6 +7,7 @@ This repo provides example implementation of an approach to place CRL (as Certif
 To run this code you'll need:
 1. [Go](https://golang.org/doc/install)
 2. [Truffle Suite](https://www.trufflesuite.com/docs/truffle/getting-started/installation)
+3. [abigen](https://github.com/ethereum/go-ethereum)
 
 ## Steps
 * Clone and build repo
@@ -16,11 +17,15 @@ $: cd ethcrl && go mod download
 ```
 * Obtain supported solidity compiler
 ```bash
-$: cd sol/src && truffle obtain
+$: cd sol/src && truffle obtain && cd -
+```
+* Generate binding contracts with `abigen`
+```bash
+$: cd sol && ./gen.sh && cd -
 ```
 * On a _separate console_ run Truffle Develop from `<repo_path>/sol/src` folder and leave it as is
 ```bash
-$: truffle develop
+$: cd sol/src && truffle develop
 ``` 
 * Copy the first private key from the provided output
 * Build an example code
