@@ -8,6 +8,7 @@ To run this code you'll need:
 1. [Go](https://golang.org/doc/install)
 2. [Truffle Suite](https://www.trufflesuite.com/docs/truffle/getting-started/installation)
 3. [abigen](https://github.com/ethereum/go-ethereum)
+4. [solidity](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source)
 
 ## Steps
 * Clone and build repo
